@@ -1,0 +1,244 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "authorship_tag": "ABX9TyOIxxbmSJrFdDseJqqKEXRJ",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/Tongthebread/AIequity/blob/main/AIEQUITY/LSTMmodel\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "Importing Libraries"
+      ],
+      "metadata": {
+        "id": "rXwncsPPnkSL"
+      }
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "RoExY9UrgZWS"
+      },
+      "outputs": [],
+      "source": [
+        "import pandas as pd\n",
+        "import numpy as np\n",
+        "\n",
+        "import matplotlib.pyplot as plt\n",
+        "import seaborn as sns\n",
+        "sns.set_style('whitegrid')\n",
+        "plt.style.use(\"fivethirtyeight\")\n",
+        "%matplotlib inline\n",
+        "\n",
+        "import yfinance as yf\n",
+        "\n",
+        "\n",
+        "# For time stamps\n",
+        "from datetime import datetime\n",
+        "\n"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "Load Data\n"
+      ],
+      "metadata": {
+        "id": "c0vBKDqRoN3V"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "\n",
+        "\n",
+        "tickers = [\n",
+        "    \"ABB.ST\",\"ADDT-B.ST\",\"ALFA.ST\",\"ASSA-B.ST\",\"AZN.ST\",\"ATCO-A.ST\",\"BOL.ST\",\n",
+        "    \"EPI-A.ST\",\"EQT.ST\",\"ERIC-B.ST\",\"ESSITY-B.ST\",\"EVO.ST\",\"HM-B.ST\",\"HEXA-B.ST\",\n",
+        "    \"INDU-C.ST\",\"INVE-B.ST\",\"LIFCO-B.ST\",\"NIBE-B.ST\",\"NDA-SE.ST\",\"SAAB-B.ST\",\n",
+        "    \"SAND.ST\",\"SEB-A.ST\",\"SKA-B.ST\",\"SKF-B.ST\",\"SCA-B.ST\",\"SHB-A.ST\",\"SWED-A.ST\",\n",
+        "    \"TEL2-B.ST\",\"TELIA.ST\",\"VOLV-B.ST\"\n",
+        "]\n",
+        "\n",
+        "# Fetch data directly\n",
+        "data = yf.download(\n",
+        "    tickers,\n",
+        "    interval=\"1d\",\n",
+        "    auto_adjust=True,\n",
+        "    group_by=\"ticker\",\n",
+        "    progress=False\n",
+        ")\n",
+        "\n",
+        "print(data.head())\n"
+      ],
+      "metadata": {
+        "id": "-AnrpWm3nn9E",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "61a21218-e9df-485e-bf19-b6556fa66a47"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Ticker       HEXA-B.ST                                               \\\n",
+            "Price             Open        High         Low       Close   Volume   \n",
+            "Date                                                                  \n",
+            "2025-11-10  116.150002  117.599998  116.150002  116.300003  1979825   \n",
+            "2025-11-11  116.949997  118.250000  115.900002  118.250000  2644169   \n",
+            "2025-11-12  118.300003  118.349998  116.550003  116.550003  3139727   \n",
+            "2025-11-13  117.150002  117.349998  113.650002  113.650002  2698285   \n",
+            "2025-11-14  112.500000  112.599998  110.699997  112.599998  2208161   \n",
+            "\n",
+            "Ticker          EQT.ST                                               ...  \\\n",
+            "Price             Open        High         Low       Close   Volume  ...   \n",
+            "Date                                                                 ...   \n",
+            "2025-11-10  326.562349  332.821366  326.264282  326.264282  2368467  ...   \n",
+            "2025-11-11  328.052593  336.795351  325.866889  336.497314  1770675  ...   \n",
+            "2025-11-12  336.696002  342.557626  332.125911  338.484314  1602172  ...   \n",
+            "2025-11-13  340.769345  343.749835  331.132416  331.132416   909480  ...   \n",
+            "2025-11-14  327.456505  332.920736  322.489021  332.821381   905551  ...   \n",
+            "\n",
+            "Ticker       SAAB-B.ST                                               \\\n",
+            "Price             Open        High         Low       Close   Volume   \n",
+            "Date                                                                  \n",
+            "2025-11-10  516.000000  528.400024  516.000000  524.900024  1402872   \n",
+            "2025-11-11  520.400024  523.799988  514.400024  518.799988  1267909   \n",
+            "2025-11-12  518.099976  526.000000  515.599976  524.299988  1602383   \n",
+            "2025-11-13  523.000000  539.799988  521.000000  533.400024  1595439   \n",
+            "2025-11-14  530.000000  531.000000  508.000000  525.400024  2352134   \n",
+            "\n",
+            "Ticker       VOLV-B.ST                                               \n",
+            "Price             Open        High         Low       Close   Volume  \n",
+            "Date                                                                 \n",
+            "2025-11-10  263.600006  265.899994  263.500000  264.100006  1953103  \n",
+            "2025-11-11  264.799988  268.700012  264.399994  267.799988  2381404  \n",
+            "2025-11-12  269.000000  270.200012  267.299988  268.399994  2667611  \n",
+            "2025-11-13  268.399994  269.799988  267.700012  267.700012  2274151  \n",
+            "2025-11-14  266.100006  266.500000  262.200012  266.500000  2463954  \n",
+            "\n",
+            "[5 rows x 150 columns]\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [],
+      "metadata": {
+        "id": "vbRcP6swnh1u"
+      }
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "Flatten"
+      ],
+      "metadata": {
+        "id": "C5eQQWppbSee"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "frames = []\n",
+        "for t in tickers:\n",
+        "    d = data[t].copy()\n",
+        "    d.columns = [c.lower() for c in d.columns]       # open, high, low, close, volume\n",
+        "    d[\"ticker\"] = t\n",
+        "    frames.append(d)\n",
+        "\n",
+        "px = (pd.concat(frames)\n",
+        "        .reset_index()\n",
+        "        .sort_values([\"ticker\",\"Date\"])\n",
+        "        .reset_index(drop=True))\n",
+        "\n",
+        "# make timezone explicit\n",
+        "px[\"Date\"] = pd.to_datetime(px[\"Date\"])\n",
+        "if px[\"Date\"].dt.tz is None:\n",
+        "    px[\"Date\"] = px[\"Date\"].dt.tz_localize(\"UTC\")\n",
+        "\n",
+        "# 3) Basic cleaning\n",
+        "px = px.dropna(subset=[\"close\"])\n",
+        "px = px[px[\"volume\"].fillna(0) >= 0]  # keep zeros, drop negatives if any\n",
+        "\n",
+        "# 4) Features + target (quarter-ahead log return)\n",
+        "HORIZON  = 63   # ≈ one quarter\n",
+        "LOOKBACK = 60   # you’ll use this in the LSTM windowing\n",
+        "\n",
+        "px[\"ret_1d\"]   = px.groupby(\"ticker\")[\"close\"].transform(lambda s: np.log(s/s.shift(1)))\n",
+        "px[\"vol_roll\"] = px.groupby(\"ticker\")[\"ret_1d\"].transform(lambda s: s.rolling(20).std())\n",
+        "px[\"mom_20\"]   = px.groupby(\"ticker\")[\"close\"].transform(lambda s: s.pct_change(20))\n",
+        "\n",
+        "px[\"target\"] = np.log(px.groupby(\"ticker\")[\"close\"].shift(-HORIZON) / px[\"close\"])\n",
+        "\n",
+        "# Drop rows without target or features\n",
+        "px = px.dropna(subset=[\"target\",\"ret_1d\",\"vol_roll\",\"mom_20\"]).reset_index(drop=True)\n",
+        "\n",
+        "# 5) Save for the LSTM pipeline\n",
+        "px.to_csv(\"data_omxs30.csv\", index=False)\n",
+        "print(\"Saved data_omxs30.csv with columns:\", list(px.columns))"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "g92eibTabRxQ",
+        "outputId": "bf4f3318-f83b-4da9-862d-1289fa3b2785"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Saved data_omxs30.csv with columns: ['Date', 'open', 'high', 'low', 'close', 'volume', 'ticker', 'ret_1d', 'vol_roll', 'mom_20', 'target']\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [],
+      "metadata": {
+        "id": "hfthmQGXnbHE"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "LSTM construction"
+      ],
+      "metadata": {
+        "id": "3RZu6pOxjCi9"
+      }
+    }
+  ]
+}
